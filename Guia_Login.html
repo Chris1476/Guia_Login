@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Completa - Crear App de Autenticación con ASP.NET Core 8/9 MVC</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .sidebar {
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+        }
+        .section-title {
+            border-bottom: 3px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .step-number {
+            background-color: #0d6efd;
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .highlight-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .tip-box {
+            background-color: #d1e7dd;
+            border-left: 4px solid #198754;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .warning-box {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            position: relative;
+        }
+        pre code {
+            color: #f8f8f2;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #4a4a4a;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s;
+        }
+        .copy-btn:hover {
+            background-color: #5a5a5a;
+        }
+        .copy-btn.copied {
+            background-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 bg-light sidebar p-3">
+                <h5 class="mb-4"><i class="bi bi-book"></i> Contenido</h5>
+                <button id="exportPdf" class="btn btn-primary btn-sm mb-3 w-100">
+                    <i class="bi bi-file-earmark-pdf"></i> Exportar a PDF
+                </button>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="#introduccion"><i class="bi bi-info-circle"></i> Introducción</a>
+                    <a class="nav-link" href="#paso1"><i class="bi bi-1-circle"></i> Paso 1: Crear Proyecto</a>
+                    <a class="nav-link" href="#paso2"><i class="bi bi-2-circle"></i> Paso 2: Base de Datos</a>
+                    <a class="nav-link" href="#paso3"><i class="bi bi-3-circle"></i> Paso 3: Entity Framework Core</a>
+                    <a class="nav-link" href="#paso4"><i class="bi bi-4-circle"></i> Paso 4: Modelos y DTOs</a>
+                    <a class="nav-link" href="#paso5"><i class="bi bi-5-circle"></i> Paso 5: Servicios</a>
+                    <a class="nav-link" href="#paso6"><i class="bi bi-6-circle"></i> Paso 6: Controladores</a>
+                    <a class="nav-link" href="#paso7"><i class="bi bi-7-circle"></i> Paso 7: Vistas</a>
+                    <a class="nav-link" href="#jwt"><i class="bi bi-key"></i> JWT Authentication</a>
+                    <a class="nav-link" href="#htmx"><i class="bi bi-lightning"></i> HTMX</a>
+                    <a class="nav-link" href="#rate-limiting"><i class="bi bi-shield-lock"></i> Rate Limiting</a>
+                    <a class="nav-link" href="#mejoras"><i class="bi bi-star"></i> Mejoras Adicionales</a>
+                    <a class="nav-link" href="#recursos"><i class="bi bi-link-45deg"></i> Recursos</a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 p-4">
+                <div class="mb-4">
+                    <h1 class="display-4">Guía Completa</h1>
+                    <p class="lead">Crear Aplicación de Autenticación con ASP.NET Core 8/9 MVC, JWT y HTMX</p>
+                </div>
+
+                <!-- Introducción -->
+                <section id="introduccion" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-info-circle"></i> Introducción</h2>
+                    <p>Esta guía te enseñará paso a paso cómo crear una aplicación completa de autenticación con ASP.NET Core 8/9 MVC desde cero. Implementarás registro de usuarios, login, confirmación de cuenta por email, restablecimiento de contraseña, y características modernas como JWT authentication y HTMX.</p>
+                    
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-lightbulb"></i> Características de la aplicación:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Registro de usuarios con confirmación por email</li>
+                            <li>Login con autenticación JWT (stateless)</li>
+                            <li>Restablecimiento de contraseña</li>
+                            <li>Entity Framework Core (Database First)</li>
+                            <li>HTMX para interactividad moderna</li>
+                            <li>Rate Limiting para protección contra ataques</li>
+                            <li>Arquitectura limpia con inyección de dependencias</li>
+                        </ul>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-tools"></i> Requisitos previos:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Visual Studio 2022</li>
+                            <li>SQL Server (Express o completo)</li>
+                            <li>SQL Server Management Studio</li>
+                            <li>Cuenta de Gmail para envío de emails (o configurar otro SMTP)</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 1 -->
+                <section id="paso1" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">1</span> Crear Proyecto ASP.NET Core 8/9 MVC</h2>
+                    
+                    <h4>1.1 Crear el nuevo proyecto en Visual Studio 2022</h4>
+                    <div class="code-block">
+                        <pre><code>1. Abrir Visual Studio 2022
+2. Crear un nuevo proyecto (File > New > Project)
+3. Buscar "ASP.NET Core Web App (Model-View-Controller)"
+4. Seleccionar .NET 8.0 o .NET 9.0
+5. Nombre del proyecto: WebAppCorreo
+6. Ubicación: selecciona tu carpeta de trabajo
+7. Crear</code></pre>
+                    </div>
+
+                    <h4>1.2 Estructura del proyecto creada por VS 2022</h4>
+                    <div class="code-block">
+                        <pre><code>WebAppCorreo/
+├── Controllers/
+│   └── HomeController.cs
+├── Models/
+├── Views/
+│   ├── Home/
+│   ├── Shared/
+│   └── _ViewStart.cshtml
+├── wwwroot/
+│   ├── css/
+│   ├── js/
+│   └── lib/
+├── appsettings.json
+├── appsettings.Development.json
+├── Program.cs
+└── WebAppCorreo.csproj</code></pre>
+                    </div>
+
+                    <h4>1.3 Archivos a eliminar del proyecto por defecto</h4>
+                    <div class="warning-box">
+                        <strong><i class="bi bi-trash"></i> Archivos que puedes borrar:</strong>
+                        <p class="mb-2">Visual Studio 2022 crea archivos de ejemplo que no necesitas para tu aplicación de autenticación:</p>
+                        <ul class="mb-0">
+                            <li><strong>Controllers/HomeController.cs</strong> - Controlador de ejemplo</li>
+                            <li><strong>Views/Home/</strong> - Carpeta completa con vistas de ejemplo (Index, About, Contact)</li>
+                            <li><strong>Views/Shared/Error.cshtml</strong> - Página de error genérica (puedes crear la tuya después)</li>
+                            <li><strong>wwwroot/css/site.css</strong> - Estilos por defecto (usarás Bootstrap)</li>
+                            <li><strong>wwwroot/js/site.js</strong> - JavaScript por defecto</li>
+                        </ul>
+                    </div>
+
+                    <h4>1.4 Crear carpetas adicionales para arquitectura limpia</h4>
+                    <div class="code-block">
+                        <pre><code>Crear las siguientes carpetas en el proyecto:
+- Data/          (para DbContext)
+- Services/      (para lógica de negocio)
+- Interfaces/    (para interfaces de servicios)
+- DTOs/          (para Data Transfer Objects)</code></pre>
+                    </div>
+
+                    <h4>1.5 Actualizar Program.cs con configuración básica</h4>
+                    <div class="code-block">
+                        <pre><code>var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Inicio}/{action=Login}/{id?}");
+
+app.Run();</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-lightbulb"></i> Consejo:</strong> Ya configuramos la ruta por defecto para que apunte a <code>Inicio/Login</code> en lugar de <code>Home/Index</code>. Crearemos el controlador Inicio más adelante.
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-play-circle"></i> 🎯 Punto de Prueba #1 - Verificar proyecto base:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Presiona <strong>F5</strong> en Visual Studio para ejecutar la aplicación</li>
+                            <li>Verás un error 404 porque el controlador Inicio aún no existe (es normal)</li>
+                            <li>Si ves el error, significa que el proyecto se compiló y ejecutó correctamente</li>
+                            <li>Detén la aplicación (Shift + F5) antes de continuar</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 2 -->
+                <section id="paso2" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">2</span> Crear Base de Datos y Tabla</h2>
+                    
+                    <h4>2.1 Crear la base de datos en SQL Server</h4>
+                    <p>Abre SQL Server Management Studio y ejecuta el siguiente script para crear la base de datos:</p>
+                    <div class="code-block">
+                        <pre><code>CREATE DATABASE DBPrueba
+GO
+
+USE DBPrueba
+GO</code></pre>
+                    </div>
+
+                    <h4>2.2 Crear la tabla de usuarios</h4>
+                    <div class="code-block">
+                        <pre><code>CREATE TABLE Usuario(
+    IdUsuario INT PRIMARY KEY IDENTITY(1,1),
+    Nombre VARCHAR(100) NOT NULL,
+    Correo VARCHAR(150) NOT NULL,
+    Clave VARCHAR(256) NOT NULL,
+    Restablecer BIT DEFAULT 0,
+    Confirmado BIT DEFAULT 0,
+    Token VARCHAR(256) NULL,
+    CONSTRAINT UK_Correo UNIQUE (Correo)
+)
+GO</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Explicación de la estructura:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>IdUsuario:</strong> Identificador único autoincremental</li>
+                            <li><strong>Nombre:</strong> Nombre del usuario (máximo 100 caracteres)</li>
+                            <li><strong>Correo:</strong> Email único del usuario (máximo 150 caracteres)</li>
+                            <li><strong>Clave:</strong> Contraseña hasheada con SHA256 (máximo 256 caracteres)</li>
+                            <li><strong>Restablecer:</strong> Indica si el usuario solicitó restablecer contraseña</li>
+                            <li><strong>Confirmado:</strong> Indica si el usuario confirmó su cuenta por email</li>
+                            <li><strong>Token:</strong> Token para confirmación o restablecimiento de contraseña</li>
+                        </ul>
+                    </div>
+
+                    <h4>2.3 Verificar la creación</h4>
+                    <div class="code-block">
+                        <pre><code>-- Verificar que la base de datos existe
+SELECT name FROM sys.databases WHERE name = 'DBPrueba'
+
+-- Verificar que la tabla existe
+USE DBPrueba
+SELECT name FROM sys.tables WHERE name = 'Usuario'
+
+-- Verificar la estructura de la tabla
+EXEC sp_help 'Usuario'</code></pre>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong><i class="bi bi-exclamation-triangle"></i> Importante:</strong>
+                        <p class="mb-0">Asegúrate de que SQL Server esté corriendo y que puedas conectarte con autenticación de Windows (Trusted_Connection) o con usuario y contraseña según tu configuración.</p>
+                    </div>
+                </section>
+
+                <!-- Paso 3 -->
+                <section id="paso3" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">3</span> Configurar Entity Framework Core (Database First)</h2>
+                    
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-database"></i> Enfoque Database First:</strong>
+                        <p class="mb-0">Ya creamos la base de datos y la tabla en el Paso 2. Ahora usaremos el enfoque Database First para generar automáticamente el DbContext y las entidades desde la base de datos existente.</p>
+                    </div>
+
+                    <h4>3.1 Instalar paquetes NuGet desde Package Manager Console</h4>
+                    <p>En Visual Studio 2022: <strong>Tools &gt; NuGet Package Manager &gt; Package Manager Console</strong></p>
+                    <div class="code-block">
+                        <pre><code>Install-Package Microsoft.EntityFrameworkCore.SqlServer
+Install-Package Microsoft.EntityFrameworkCore.Tools
+Install-Package Microsoft.AspNetCore.Identity.EntityFrameworkCore</code></pre>
+                    </div>
+
+                    <h4>3.2 Configurar conexión en appsettings.json</h4>
+                    <div class="code-block">
+                        <pre><code>{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(local);Database=DBPrueba;Trusted_Connection=True;TrustServerCertificate=True;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "Jwt": {
+    "Key": "TuClaveSecretaMuyLargaYSegura123456789",
+    "Issuer": "WebAppCorreo",
+    "Audience": "WebAppCorreoUsers",
+    "ExpirationInMinutes": 60
+  },
+  "Smtp": {
+    "Host": "smtp.gmail.com",
+    "Port": 587,
+    "NombreEnvia": "",
+    "Correo": "",
+    "Clave": ""
+  }
+}</code></pre>
+                    </div>
+
+                    <h4>3.3 Generar DbContext desde base de datos existente (Database First)</h4>
+                    <p>Usa el comando <code>Scaffold-DbContext</code> para generar el DbContext y las entidades desde la base de datos existente:</p>
+                    <div class="code-block">
+                        <pre><code>Scaffold-DbContext "Server=(local);Database=DBPrueba;Trusted_Connection=True;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Data -Context ApplicationDbContext</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-lightbulb"></i> Nota:</strong> Este comando generará automáticamente:
+                        <ul class="mb-0 mt-2">
+                            <li>El archivo <code>ApplicationDbContext.cs</code> en la carpeta <code>Data</code></li>
+                            <li>La clase <code>Usuario.cs</code> (entidad) en la carpeta <code>Data</code></li>
+                            <li>La configuración de la tabla en el DbContext</li>
+                        </ul>
+                    </div>
+
+                    <h4>3.4 DbContext generado (ejemplo)</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+
+namespace WebAppCorreo.Core.Data
+{
+    public partial class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext()
+        {
+        }
+
+        public ApplicationDbContext(DbContextOptions&lt;ApplicationDbContext&gt; options)
+            : base(options)
+        {
+        }
+
+        public virtual DbSet&lt;Usuario&gt; Usuarios { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Server=(local);Database=DBPrueba;Trusted_Connection=True;TrustServerCertificate=True;");
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity&lt;Usuario&gt;(entity =&gt;
+            {
+                entity.HasKey(e =&gt; e.IdUsuario);
+                
+                entity.ToTable("Usuario");
+                
+                entity.Property(e =&gt; e.Correo)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+                    
+                entity.Property(e =&gt; e.Nombre)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+                    
+                entity.Property(e =&gt; e.Clave)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
+                    
+                entity.Property(e =&gt; e.Token)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
+            });
+        }
+    }
+
+    public partial class Usuario
+    {
+        public int IdUsuario { get; set; }
+        public string Nombre { get; set; }
+        public string Correo { get; set; }
+        public string Clave { get; set; }
+        public bool Restablecer { get; set; }
+        public bool Confirmado { get; set; }
+        public string Token { get; set; }
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>3.5 Configurar DI en Program.cs</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.EntityFrameworkCore;
+using WebAppCorreo.Core.Data;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add DbContext
+builder.Services.AddDbContext&lt;ApplicationDbContext&gt;(options =&gt;
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add services
+builder.Services.AddScoped&lt;IUsuarioService, UsuarioService&gt;();
+builder.Services.AddScoped&lt;ICorreoService, CorreoService&gt;();
+builder.Services.AddScoped&lt;IJwtService, JwtService&gt;();
+
+// Add MVC
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+// Configure pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Inicio}/{action=Login}/{id?}");
+
+app.Run();</code></pre>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong><i class="bi bi-exclamation-triangle"></i> Importante:</strong>
+                        <p class="mb-0">Al usar Database First, <strong>NO</strong> necesitas crear migraciones ni ejecutar <code>Update-Database</code>. La base de datos ya existe y el DbContext se genera desde ella. Si necesitas cambiar la estructura de la base de datos, hazlo directamente en SQL Server y luego vuelve a ejecutar <code>Scaffold-DbContext</code>.</p>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-play-circle"></i> 🎯 Punto de Prueba #2 - Verificar conexión a base de datos:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Verifica que se generó la carpeta <code>Data</code> con <code>ApplicationDbContext.cs</code> y <code>Usuario.cs</code></li>
+                            <li>Compila el proyecto (Ctrl + Shift + B)</li>
+                            <li>Si no hay errores de compilación, la conexión a la base de datos está configurada correctamente</li>
+                            <li>Si hay errores, verifica que la cadena de conexión en <code>appsettings.json</code> sea correcta</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 4 -->
+                <section id="paso4" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">4</span> Crear Modelos y DTOs</h2>
+                    
+                    <h4>4.1 Crear DTOs (Data Transfer Objects)</h4>
+                    <p>Los DTOs se usan para transferir datos entre capas y para validación en las vistas. Crea la carpeta <code>DTOs</code> y agrega las siguientes clases:</p>
+                    
+                    <h5>UsuarioDTO.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using System.ComponentModel.DataAnnotations;
+
+namespace WebAppCorreo.DTOs
+{
+    public class UsuarioDTO
+    {
+        public int IdUsuario { get; set; }
+
+        [Required(ErrorMessage = "El nombre es requerido")]
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
+        public string Nombre { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El correo es requerido")]
+        [EmailAddress(ErrorMessage = "Formato de correo inválido")]
+        [StringLength(150, ErrorMessage = "El correo no puede exceder 150 caracteres")]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La clave es requerida")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "La clave debe tener entre 6 y 100 caracteres")]
+        public string Clave { get; set; } = string.Empty;
+
+        [Compare("Clave", ErrorMessage = "Las contraseñas no coinciden")]
+        [Display(Name = "Confirmar Clave")]
+        public string? ConfirmarClave { get; set; }
+
+        public bool Restablecer { get; set; }
+        public bool Confirmado { get; set; }
+        public string? Token { get; set; }
+    }
+}</code></pre>
+                    </div>
+
+                    <h5>CorreoDTO.cs</h5>
+                    <div class="code-block">
+                        <pre><code>namespace WebAppCorreo.DTOs
+{
+    public class CorreoDTO
+    {
+        public string Para { get; set; } = string.Empty;
+        public string Asunto { get; set; } = string.Empty;
+        public string Contenido { get; set; } = string.Empty;
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>4.2 Crear servicios de utilidad</h4>
+                    <p>Crea la carpeta <code>Services</code> y agrega la clase de utilidades:</p>
+                    
+                    <h5>UtilidadServicio.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using System.Security.Cryptography;
+using System.Text;
+
+namespace WebAppCorreo.Services
+{
+    public static class UtilidadServicio
+    {
+        public static string ConvertirSHA256(string texto)
+        {
+            string hash = string.Empty;
+
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] hashValue = sha256.ComputeHash(Encoding.UTF8.GetBytes(texto));
+
+                foreach (byte b in hashValue)
+                    hash += $"{b:X2}";
+            }
+
+            return hash;
+        }
+
+        public static string GenerarToken()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Nota:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>La entidad <code>Usuario</code> ya fue generada automáticamente por EF Core en el Paso 3</li>
+                            <li>Los DTOs se usan para las vistas y validación</li>
+                            <li>La entidad <code>Usuario</code> se usa para acceso a datos</li>
+                            <li><code>UtilidadServicio</code> contiene métodos reutilizables para hashing y generación de tokens</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 5 -->
+                <section id="paso5" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">5</span> Crear Servicios</h2>
+                    
+                    <h4>5.1 Crear interfaces</h4>
+                    <p>Crea la carpeta <code>Interfaces</code> y agrega las interfaces:</p>
+                    
+                    <h5>IUsuarioService.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using WebAppCorreo.DTOs;
+
+namespace WebAppCorreo.Interfaces
+{
+    public interface IUsuarioService
+    {
+        Task&lt;bool&gt; Registrar(UsuarioDTO usuario);
+        Task&lt;UsuarioDTO?&gt; Validar(string correo, string clave);
+        Task&lt;UsuarioDTO?&gt; Obtener(string correo);
+        Task&lt;bool&gt; RestablecerActualizar(int restablecer, string clave, string token);
+        Task&lt;bool&gt; Confirmar(string token);
+    }
+}</code></pre>
+                    </div>
+
+                    <h5>ICorreoService.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using WebAppCorreo.DTOs;
+
+namespace WebAppCorreo.Interfaces
+{
+    public interface ICorreoService
+    {
+        bool Enviar(CorreoDTO correoDTO);
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>5.2 Implementar servicios</h4>
+                    
+                    <h5>UsuarioService.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.EntityFrameworkCore;
+using WebAppCorreo.Data;
+using WebAppCorreo.DTOs;
+using WebAppCorreo.Interfaces;
+using WebAppCorreo.Services;
+
+namespace WebAppCorreo.Services
+{
+    public class UsuarioService : IUsuarioService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public UsuarioService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task&lt;bool&gt; Registrar(UsuarioDTO usuario)
+        {
+            var nuevoUsuario = new Usuario
+            {
+                Nombre = usuario.Nombre,
+                Correo = usuario.Correo,
+                Clave = UtilidadServicio.ConvertirSHA256(usuario.Clave),
+                Token = UtilidadServicio.GenerarToken(),
+                Restablecer = false,
+                Confirmado = false
+            };
+
+            _context.Usuarios.Add(nuevoUsuario);
+            return await _context.SaveChangesAsync() &gt; 0;
+        }
+
+        public async Task&lt;UsuarioDTO?&gt; Validar(string correo, string clave)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u =&gt; u.Correo == correo && u.Clave == clave);
+
+            if (usuario == null)
+                return null;
+
+            return new UsuarioDTO
+            {
+                IdUsuario = usuario.IdUsuario,
+                Nombre = usuario.Nombre,
+                Correo = usuario.Correo,
+                Restablecer = usuario.Restablecer,
+                Confirmado = usuario.Confirmado
+            };
+        }
+
+        public async Task&lt;UsuarioDTO?&gt; Obtener(string correo)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u =&gt; u.Correo == correo);
+
+            if (usuario == null)
+                return null;
+
+            return new UsuarioDTO
+            {
+                IdUsuario = usuario.IdUsuario,
+                Nombre = usuario.Nombre,
+                Correo = usuario.Correo,
+                Clave = usuario.Clave,
+                Restablecer = usuario.Restablecer,
+                Confirmado = usuario.Confirmado,
+                Token = usuario.Token
+            };
+        }
+
+        public async Task&lt;bool&gt; RestablecerActualizar(int restablecer, string clave, string token)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u =&gt; u.Token == token);
+
+            if (usuario == null)
+                return false;
+
+            usuario.Restablecer = restablecer == 1;
+            usuario.Clave = clave;
+
+            return await _context.SaveChangesAsync() &gt; 0;
+        }
+
+        public async Task&lt;bool&gt; Confirmar(string token)
+        {
+            var usuario = await _context.Usuarios
+                .FirstOrDefaultAsync(u =&gt; u.Token == token);
+
+            if (usuario == null)
+                return false;
+
+            usuario.Confirmado = true;
+
+            return await _context.SaveChangesAsync() &gt; 0;
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h5>CorreoService.cs</h5>
+                    <div class="code-block">
+                        <pre><code>using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using MimeKit.Text;
+using WebAppCorreo.DTOs;
+using WebAppCorreo.Interfaces;
+
+namespace WebAppCorreo.Services
+{
+    public class CorreoService : ICorreoService
+    {
+        private readonly IConfiguration _configuration;
+
+        public CorreoService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public bool Enviar(CorreoDTO correoDTO)
+        {
+            try
+            {
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(
+                    _configuration["Smtp:NombreEnvia"] ?? "Sistema",
+                    _configuration["Smtp:Correo"] ?? ""));
+                email.To.Add(MailboxAddress.Parse(correoDTO.Para));
+                email.Subject = correoDTO.Asunto;
+                email.Body = new TextPart(TextFormat.Html)
+                {
+                    Text = correoDTO.Contenido
+                };
+
+                using var smtp = new SmtpClient();
+                smtp.Connect(
+                    _configuration["Smtp:Host"] ?? "smtp.gmail.com",
+                    int.Parse(_configuration["Smtp:Port"] ?? "587"),
+                    SecureSocketOptions.StartTls);
+
+                smtp.Authenticate(
+                    _configuration["Smtp:Correo"] ?? "",
+                    _configuration["Smtp:Clave"] ?? "");
+
+                smtp.Send(email);
+                smtp.Disconnect(true);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Nota:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Para usar MailKit, instala el paquete: <code>Install-Package MailKit</code></li>
+                            <li>Configura las credenciales SMTP en <code>appsettings.json</code></li>
+                            <li>Para Gmail, necesitas habilitar "Acceso a apps menos seguras" o usar App Passwords</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 6 -->
+                <section id="paso6" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">6</span> Crear Controladores</h2>
+                    
+                    <h4>6.1 Configurar inyección de dependencias en Program.cs</h4>
+                    <p>Agrega los servicios al contenedor de inyección de dependencias:</p>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.EntityFrameworkCore;
+using WebAppCorreo.Data;
+using WebAppCorreo.Interfaces;
+using WebAppCorreo.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add DbContext
+builder.Services.AddDbContext&lt;ApplicationDbContext&gt;(options =&gt;
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add services
+builder.Services.AddScoped&lt;IUsuarioService, UsuarioService&gt;();
+builder.Services.AddScoped&lt;ICorreoService, CorreoService&gt;();
+
+// Add MVC
+builder.Services.AddControllersWithViews();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseAuthorization();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Inicio}/{action=Login}/{id?}");
+
+app.Run();</code></pre>
+                    </div>
+
+                    <h4>6.2 Crear InicioController</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.AspNetCore.Mvc;
+using WebAppCorreo.DTOs;
+using WebAppCorreo.Interfaces;
+using WebAppCorreo.Services;
+
+namespace WebAppCorreo.Controllers
+{
+    public class InicioController : Controller
+    {
+        private readonly IUsuarioService _usuarioService;
+        private readonly ICorreoService _correoService;
+
+        public InicioController(
+            IUsuarioService usuarioService,
+            ICorreoService correoService)
+        {
+            _usuarioService = usuarioService;
+            _correoService = correoService;
+        }
+
+        // GET: Inicio/Login
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        // POST: Inicio/Login
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Login(string correo, string clave)
+        {
+            var usuario = await _usuarioService.Validar(
+                correo, 
+                UtilidadServicio.ConvertirSHA256(clave));
+
+            if (usuario != null)
+            {
+                if (!usuario.Confirmado)
+                {
+                    ViewBag.Mensaje = $"Falta confirmar su cuenta. Se le envió un correo a {correo}";
+                }
+                else if (usuario.Restablecer)
+                {
+                    ViewBag.Mensaje = $"Se ha solicitado restablecer su cuenta, favor revise su bandeja del correo {correo}";
+                }
+                else
+                {
+                    // TODO: Implementar JWT authentication aquí
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+            else
+            {
+                ViewBag.Mensaje = "No se encontraron coincidencias";
+            }
+
+            return View();
+        }
+
+        // GET: Inicio/Registrar
+        public IActionResult Registrar()
+        {
+            return View();
+        }
+
+        // POST: Inicio/Registrar
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Registrar(UsuarioDTO usuario)
+        {
+            if (usuario.Clave != usuario.ConfirmarClave)
+            {
+                ViewBag.Nombre = usuario.Nombre;
+                ViewBag.Correo = usuario.Correo;
+                ViewBag.Mensaje = "Las contraseñas no coinciden";
+                return View();
+            }
+
+            var existe = await _usuarioService.Obtener(usuario.Correo);
+            if (existe != null)
+            {
+                ViewBag.Mensaje = "El correo ya se encuentra registrado";
+                return View();
+            }
+
+            bool respuesta = await _usuarioService.Registrar(usuario);
+
+            if (respuesta)
+            {
+                string url = Url.Action("Confirmar", "Inicio", new { token = usuario.Token }, protocol: Request.Scheme);
+                
+                string htmlBody = $@"
+                    &lt;h2&gt;Bienvenido {usuario.Nombre}&lt;/h2&gt;
+                    &lt;p&gt;Gracias por registrarte en nuestro sistema.&lt;/p&gt;
+                    &lt;p&gt;Para confirmar tu cuenta, haz clic en el siguiente enlace:&lt;/p&gt;
+                    &lt;a href='{url}'&gt;Confirmar Cuenta&lt;/a&gt;";
+
+                var correoDTO = new CorreoDTO
+                {
+                    Para = usuario.Correo,
+                    Asunto = "Correo confirmación",
+                    Contenido = htmlBody
+                };
+
+                bool enviado = _correoService.Enviar(correoDTO);
+                ViewBag.Creado = true;
+                ViewBag.Mensaje = $"Su cuenta ha sido creada. Hemos enviado un mensaje al correo {usuario.Correo} para confirmar su cuenta";
+            }
+            else
+            {
+                ViewBag.Mensaje = "No se pudo crear su cuenta";
+            }
+
+            return View();
+        }
+
+        // GET: Inicio/Confirmar
+        public async Task&lt;IActionResult&gt; Confirmar(string token)
+        {
+            ViewBag.Respuesta = await _usuarioService.Confirmar(token);
+            return View();
+        }
+
+        // GET: Inicio/Restablecer
+        public IActionResult Restablecer()
+        {
+            return View();
+        }
+
+        // POST: Inicio/Restablecer
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Restablecer(string correo)
+        {
+            var usuario = await _usuarioService.Obtener(correo);
+            ViewBag.Correo = correo;
+
+            if (usuario != null)
+            {
+                bool respuesta = await _usuarioService.RestablecerActualizar(
+                    1, 
+                    usuario.Clave, 
+                    usuario.Token);
+
+                if (respuesta)
+                {
+                    string url = Url.Action("Actualizar", "Inicio", new { token = usuario.Token }, protocol: Request.Scheme);
+                    
+                    string htmlBody = $@"
+                        &lt;h2&gt;Restablecer Contraseña&lt;/h2&gt;
+                        &lt;p&gt;Hola {usuario.Nombre}&lt;/p&gt;
+                        &lt;p&gt;Para restablecer tu contraseña, haz clic en el siguiente enlace:&lt;/p&gt;
+                        &lt;a href='{url}'&gt;Restablecer Contraseña&lt;/a&gt;";
+
+                    var correoDTO = new CorreoDTO
+                    {
+                        Para = correo,
+                        Asunto = "Restablecer cuenta",
+                        Contenido = htmlBody
+                    };
+
+                    bool enviado = _correoService.Enviar(correoDTO);
+                    ViewBag.Restablecido = true;
+                }
+                else
+                {
+                    ViewBag.Mensaje = "No se pudo restablecer la cuenta";
+                }
+            }
+            else
+            {
+                ViewBag.Mensaje = "No se encontraron coincidencias con el correo";
+            }
+
+            return View();
+        }
+
+        // GET: Inicio/Actualizar
+        public IActionResult Actualizar(string token)
+        {
+            ViewBag.Token = token;
+            return View();
+        }
+
+        // POST: Inicio/Actualizar
+        [HttpPost]
+        public async Task&lt;IActionResult&gt; Actualizar(string token, string clave, string confirmarClave)
+        {
+            ViewBag.Token = token;
+            if (clave != confirmarClave)
+            {
+                ViewBag.Mensaje = "Las contraseñas no coinciden";
+                return View();
+            }
+
+            bool respuesta = await _usuarioService.RestablecerActualizar(
+                0, 
+                UtilidadServicio.ConvertirSHA256(clave), 
+                token);
+
+            if (respuesta)
+                ViewBag.Restablecido = true;
+            else
+                ViewBag.Mensaje = "No se pudo actualizar";
+
+            return View();
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Nota:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>El controlador usa inyección de dependencias para obtener los servicios</li>
+                            <li>Todas las operaciones de base de datos son asíncronas (async/await)</li>
+                            <li>El JWT authentication se implementará en una sección posterior</li>
+                            <li>Los correpos HTML se generan como strings para simplicidad</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-play-circle"></i> 🎯 Punto de Prueba #3 - Verificar controlador:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Compila el proyecto (Ctrl + Shift + B)</li>
+                            <li>Si no hay errores de compilación, el controlador está configurado correctamente</li>
+                            <li>Presiona <strong>F5</strong> para ejecutar</li>
+                            <li>Verás un error porque las vistas aún no existen (es normal)</li>
+                            <li>Si llegas a ver el error, significa que el controlador y la inyección de dependencias funcionan</li>
+                            <li>Detén la aplicación (Shift + F5) antes de continuar</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Paso 7 -->
+                <section id="paso7" class="mb-5">
+                    <h2 class="section-title"><span class="step-number">7</span> Crear Vistas</h2>
+                    
+                    <h4>7.1 Actualizar _Layout.cshtml</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="es"&gt;
+&lt;head&gt;
+    &lt;meta charset="utf-8" /&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;
+    &lt;title&gt;@ViewData["Title"] - WebAppCorreo&lt;/title&gt;
+    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+    &lt;script src="https://unpkg.com/htmx.org@1.9.10"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;nav class="navbar navbar-expand-lg navbar-dark bg-dark"&gt;
+        &lt;div class="container"&gt;
+            &lt;a class="navbar-brand" href="/Inicio/Login"&gt;WebAppCorreo&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/nav&gt;
+
+    &lt;div class="container mt-4"&gt;
+        @RenderBody()
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
+    @await RenderSectionAsync("Scripts", required: false)
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                    </div>
+
+                    <h4>7.2 Crear vista Login.cshtml</h4>
+                    <div class="code-block">
+                        <pre><code>@{
+    ViewData["Title"] = "Login";
+}
+
+&lt;div class="row justify-content-center"&gt;
+    &lt;div class="col-md-6"&gt;
+        &lt;div class="card"&gt;
+            &lt;div class="card-header"&gt;
+                &lt;h4&gt;Iniciar Sesión&lt;/h4&gt;
+            &lt;/div&gt;
+            &lt;div class="card-body"&gt;
+                @if (!string.IsNullOrEmpty(ViewBag.Mensaje))
+                {
+                    &lt;div class="alert alert-warning"&gt;@ViewBag.Mensaje&lt;/div&gt;
+                }
+
+                &lt;form method="post"&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Correo&lt;/label&gt;
+                        &lt;input type="email" name="correo" class="form-control" required /&gt;
+                    &lt;/div&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Clave&lt;/label&gt;
+                        &lt;input type="password" name="clave" class="form-control" required /&gt;
+                    &lt;/div&gt;
+                    &lt;button type="submit" class="btn btn-primary"&gt;Iniciar Sesión&lt;/button&gt;
+                &lt;/form&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="mt-3"&gt;
+            &lt;a href="/Inicio/Registrar"&gt;¿No tienes cuenta? Regístrate&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <h4>7.3 Crear vista Registrar.cshtml</h4>
+                    <div class="code-block">
+                        <pre><code>@using WebAppCorreo.DTOs
+@model UsuarioDTO
+
+@{
+    ViewData["Title"] = "Registrar";
+}
+
+&lt;div class="row justify-content-center"&gt;
+    &lt;div class="col-md-6"&gt;
+        &lt;div class="card"&gt;
+            &lt;div class="card-header"&gt;
+                &lt;h4&gt;Registrar Usuario&lt;/h4&gt;
+            &lt;/div&gt;
+            &lt;div class="card-body"&gt;
+                @if (ViewBag.Creado != null &amp;&amp; (bool)ViewBag.Creado)
+                {
+                    &lt;div class="alert alert-success"&gt;@ViewBag.Mensaje&lt;/div&gt;
+                }
+                else if (!string.IsNullOrEmpty(ViewBag.Mensaje))
+                {
+                    &lt;div class="alert alert-warning"&gt;@ViewBag.Mensaje&lt;/div&gt;
+                }
+
+                &lt;form method="post"&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Nombre&lt;/label&gt;
+                        &lt;input asp-for="Nombre" class="form-control" required /&gt;
+                        &lt;span asp-validation-for="Nombre" class="text-danger"&gt;&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Correo&lt;/label&gt;
+                        &lt;input asp-for="Correo" class="form-control" required /&gt;
+                        &lt;span asp-validation-for="Correo" class="text-danger"&gt;&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Clave&lt;/label&gt;
+                        &lt;input asp-for="Clave" type="password" class="form-control" required /&gt;
+                        &lt;span asp-validation-for="Clave" class="text-danger"&gt;&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;div class="mb-3"&gt;
+                        &lt;label class="form-label"&gt;Confirmar Clave&lt;/label&gt;
+                        &lt;input asp-for="ConfirmarClave" type="password" class="form-control" required /&gt;
+                        &lt;span asp-validation-for="ConfirmarClave" class="text-danger"&gt;&lt;/span&gt;
+                    &lt;/div&gt;
+                    &lt;button type="submit" class="btn btn-primary"&gt;Registrar&lt;/button&gt;
+                &lt;/form&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="mt-3"&gt;
+            &lt;a href="/Inicio/Login"&gt;¿Ya tienes cuenta? Inicia Sesión&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <h4>7.4 Crear vistas restantes</h4>
+                    <p>De manera similar, crea las vistas para:</p>
+                    <ul>
+                        <li><strong>Confirmar.cshtml</strong> - Muestra mensaje de confirmación</li>
+                        <li><strong>Restablecer.cshtml</strong> - Formulario para solicitar restablecimiento</li>
+                        <li><strong>Actualizar.cshtml</strong> - Formulario para nueva contraseña</li>
+                    </ul>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Nota:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Usa Tag Helpers (<code>asp-for</code>, <code>asp-validation-for</code>) para validación automática</li>
+                            <li>HTMX ya está incluido en el layout para interactividad futura</li>
+                            <li>Bootstrap 5 proporciona el estilo responsive</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-play-circle"></i> 🎯 Punto de Prueba #4 - Verificar aplicación completa:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Asegúrate de haber creado todas las vistas mencionadas (Login, Registrar, Confirmar, Restablecer, Actualizar)</li>
+                            <li>Compila el proyecto (Ctrl + Shift + B)</li>
+                            <li>Presiona <strong>F5</strong> para ejecutar la aplicación</li>
+                            <li>Deberías ver la página de Login con el formulario</li>
+                            <li>Intenta navegar a <code>/Inicio/Registrar</code> para verificar que la vista de registro funciona</li>
+                            <li>Si ves las páginas correctamente, ¡la base de la aplicación está funcionando!</li>
+                            <li><strong>Nota:</strong> El registro y login no funcionarán completamente hasta que configures SMTP en appsettings.json</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- JWT -->
+                <section id="jwt" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-key"></i> Implementar JWT Authentication</h2>
+                    
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-info-circle"></i> ¿Por qué JWT?</strong>
+                        <p class="mb-0">JSON Web Tokens permiten autenticación stateless, escalabilidad horizontal, y son ideales para aplicaciones modernas. En lugar de sesiones en servidor, el token contiene toda la información necesaria.</p>
+                    </div>
+
+                    <h4>1. Instalar paquete JWT desde Package Manager Console</h4>
+                    <div class="code-block">
+                        <pre><code>Install-Package Microsoft.AspNetCore.Authentication.JwtBearer</code></pre>
+                    </div>
+
+                    <h4>2. Crear servicio JWT</h4>
+                    <div class="code-block">
+                        <pre><code>using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+
+namespace WebAppCorreo.Core.Services
+{
+    public interface IJwtService
+    {
+        string GenerarToken(string correo);
+        ClaimsPrincipal? ValidarToken(string token);
+    }
+
+    public class JwtService : IJwtService
+    {
+        private readonly IConfiguration _configuration;
+
+        public JwtService(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        public string GenerarToken(string correo)
+        {
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Email, correo),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _configuration["Jwt:Issuer"],
+                audience: _configuration["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(
+                    int.Parse(_configuration["Jwt:ExpirationInMinutes"]!)),
+                signingCredentials: creds);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public ClaimsPrincipal? ValidarToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!);
+
+            try
+            {
+                var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _configuration["Jwt:Issuer"],
+                    ValidateAudience = true,
+                    ValidAudience = _configuration["Jwt:Audience"],
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                }, out _);
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>3. Configurar autenticación JWT en Program.cs</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+// ... después de builder.Services.AddDbContext()
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =&gt;
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// ... en app configuration
+app.UseAuthentication();
+app.UseAuthorization();</code></pre>
+                    </div>
+
+                    <h4>4. Crear atributo de autorización personalizado</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System.Security.Claims;
+
+namespace WebAppCorreo.Core.Attributes
+{
+    public class JwtAuthorizeAttribute : Attribute, IAuthorizationFilter
+    {
+        public void OnAuthorization(AuthorizationFilterContext context)
+        {
+            var token = context.HttpContext.Request.Cookies["JWT"];
+            
+            if (string.IsNullOrEmpty(token))
+            {
+                context.Result = new RedirectToActionResult("Login", "Inicio", null);
+                return;
+            }
+
+            var jwtService = context.HttpContext.RequestServices
+                .GetService&lt;Services.IJwtService&gt;();
+            
+            if (jwtService == null || jwtService.ValidarToken(token) == null)
+            {
+                context.Result = new RedirectToActionResult("Login", "Inicio", null);
+            }
+        }
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>5. Usar en controladores</h4>
+                    <div class="code-block">
+                        <pre><code>[JwtAuthorize]
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        // Solo accesible con JWT válido
+        return View();
+    }
+}</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-lightbulb"></i> Mejora de seguridad:</strong>
+                        Considera usar refresh tokens para sesiones más largas sin comprometer seguridad. Implementa también revocación de tokens si es necesario.
+                    </div>
+                </section>
+
+                <!-- HTMX -->
+                <section id="htmx" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-lightning"></i> Integrar HTMX</h2>
+                    
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-info-circle"></i> ¿Por qué HTMX?</strong>
+                        <p class="mb-0">HTMX permite actualizar partes de la página sin recargar completamente, usando atributos HTML simples. Es ideal para aplicaciones MVC que quieren interactividad moderna sin frameworks JavaScript complejos como React o Angular.</p>
+                    </div>
+
+                    <h4>1. Instalar HTMX</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;!-- En _Layout.cshtml --&gt;
+&lt;script src="https://unpkg.com/htmx.org@1.9.10"&gt;&lt;/script&gt;</code></pre>
+                    </div>
+
+                    <h4>2. Ejemplo: Validación de correo en tiempo real</h4>
+                    <div class="code-block">
+                        <pre><code>// Vista Registrar.cshtml
+&lt;div class="mb-3"&gt;
+    &lt;label asp-for="Correo" class="form-label"&gt;Correo&lt;/label&gt;
+    &lt;input type="email" asp-for="Correo" class="form-control" 
+           hx-post="/Inicio/VerificarCorreo"
+           hx-target="#correo-mensaje"
+           hx-trigger="change,keyup delay:500ms" /&gt;
+    &lt;span asp-validation-for="Correo" class="text-danger"&gt;&lt;/span&gt;
+    &lt;div id="correo-mensaje"&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <h4>3. Acción en el controlador</h4>
+                    <div class="code-block">
+                        <pre><code>[HttpPost]
+public async Task&lt;IActionResult&gt; VerificarCorreo(string correo)
+{
+    var existe = await _usuarioService.Obtener(correo) != null;
+    
+    if (existe)
+    {
+        return Content("&lt;div class='text-danger'&gt;El correo ya está registrado&lt;/div&gt;");
+    }
+    
+    return Content("&lt;div class='text-success'&gt;Correo disponible&lt;/div&gt;");
+}</code></pre>
+                    </div>
+
+                    <h4>4. Ejemplo: Login con HTMX</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;form hx-post="/Inicio/Login" 
+      hx-target="#login-result"
+      hx-swap="outerHTML"&gt;
+    &lt;div class="mb-3"&gt;
+        &lt;label&gt;Correo&lt;/label&gt;
+        &lt;input type="email" name="correo" class="form-control" required /&gt;
+    &lt;/div&gt;
+    &lt;div class="mb-3"&gt;
+        &lt;label&gt;Clave&lt;/label&gt;
+        &lt;input type="password" name="clave" class="form-control" required /&gt;
+    &lt;/div&gt;
+    &lt;button type="submit" class="btn btn-primary"&gt;Iniciar Sesión&lt;/button&gt;
+&lt;/form&gt;
+&lt;div id="login-result"&gt;&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <h4>5. Acción que retorna HTML parcial</h4>
+                    <div class="code-block">
+                        <pre><code>[HttpPost]
+public async Task&lt;IActionResult&gt; Login(string correo, string clave)
+{
+    var usuario = await _usuarioService.Validar(correo, UtilidadServicio.ConvertirSHA256(clave));
+
+    if (usuario != null &amp;&amp; usuario.Confirmado &amp;&amp; !usuario.Restablecer)
+    {
+        var token = _jwtService.GenerarToken(usuario.Correo);
+        Response.Cookies.Append("JWT", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
+        
+        // Redirección con HTMX
+        Response.Headers.Add("HX-Redirect", "/Home/Index");
+        return Ok();
+    }
+
+    return PartialView("_LoginError", "Credenciales inválidas");
+}</code></pre>
+                    </div>
+
+                    <h4>6. Ejemplos adicionales de HTMX</h4>
+                    <div class="code-block">
+                        <pre><code>&lt;!-- Cargar contenido al hacer scroll --&gt;
+&lt;div hx-get="/Inicio/MasUsuarios?page=2" 
+     hx-trigger="load delay:1s"
+     hx-swap="beforeend"&gt;
+&lt;/div&gt;
+
+&lt;!-- Indicador de carga --&gt;
+&lt;div hx-get="/Inicio/Datos" hx-indicator="#loading"&gt;
+    Cargar datos
+&lt;/div&gt;
+&lt;div id="loading" class="htmx-indicator"&gt;
+    Cargando...
+&lt;/div&gt;
+
+&lt;!-- Confirmación antes de acción --&gt;
+&lt;button hx-delete="/Inicio/Eliminar/123" 
+        hx-confirm="¿Estás seguro?"&gt;
+    Eliminar
+&lt;/button&gt;</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-lightbulb"></i> Patrones útiles con HTMX:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Usa <code>hx-target</code> para especificar dónde actualizar el contenido</li>
+                            <li>Usa <code>hx-swap</code> para controlar cómo se inserta el contenido (outerHTML, innerHTML, beforeend, etc.)</li>
+                            <li>Usa <code>hx-trigger</code> para definir cuándo se ejecuta la petición (click, change, load, etc.)</li>
+                            <li>Combina con <code>hx-indicator</code> para mostrar estados de carga</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Rate Limiting -->
+                <section id="rate-limiting" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-shield-lock"></i> Implementar Rate Limiting</h2>
+                    
+                    <div class="highlight-box">
+                        <strong><i class="bi bi-info-circle"></i> ¿Por qué Rate Limiting?</strong>
+                        <p class="mb-0">Rate Limiting protege tu aplicación contra ataques de fuerza bruta, abuso de APIs, y sobrecarga del servidor. Es especialmente importante para endpoints de login y registro.</p>
+                    </div>
+
+                    <h4>1. Instalar paquete NuGet</h4>
+                    <div class="code-block">
+                        <pre><code>Install-Package Microsoft.AspNetCore.RateLimiting</code></pre>
+                    </div>
+
+                    <h4>2. Configurar Rate Limiting en Program.cs</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+
+// ... después de builder.Services.AddDbContext()
+
+// Configurar Rate Limiting
+builder.Services.AddRateLimiter(options =&gt;
+{
+    // Política para login (más estricta)
+    options.AddPolicy("LoginPolicy", context =&gt;
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ =&gt; new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 5,              // Máximo 5 intentos
+                Window = TimeSpan.FromMinutes(5),  // En ventana de 5 minutos
+                SegmentsPerWindow = 2,       // 2 segmentos por ventana
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 2               // Cola de 2 peticiones
+            }));
+
+    // Política general para la aplicación
+    options.AddPolicy("GeneralPolicy", context =&gt;
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+            factory: _ =&gt; new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 100,            // 100 peticiones
+                Window = TimeSpan.FromMinutes(1),  // Por minuto
+                SegmentsPerWindow = 2,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 10
+            }));
+
+    // Configurar respuesta personalizada cuando se excede el límite
+    options.OnRejected = async (context, cancellationToken) =&gt;
+    {
+        context.HttpContext.Response.StatusCode = 429; // Too Many Requests
+        await context.HttpContext.Response.WriteAsync(
+            "Demasiadas solicitudes. Por favor, espera un momento.",
+            cancellationToken);
+    };
+});</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-info-circle"></i> Explicación detallada de los parámetros:</strong>
+                        
+                        <div class="mt-3 mb-3">
+                            <h6><strong>PermitLimit = 5</strong></h6>
+                            <ul class="mb-0">
+                                <li><strong>¿Qué Es?</strong> El número máximo de peticiones permitidas dentro del período de tiempo definido.</li>
+                                <li><strong>¿Para qué se usa?</strong> Para establecer el límite máximo de solicitudes que un cliente puede realizar.</li>
+                                <li><strong>¿Cómo se usa?</strong> Se configura como un valor entero en las opciones del limiter.</li>
+                                <li><strong>¿Cuál es su beneficio?</strong> Previene abuso y ataques de fuerza bruta limitando el volumen de peticiones.</li>
+                                <li><strong>¿Valores a configurar y por qué?</strong> Para login: 5-10 intentos. Para APIs generales: 100-1000. Valores bajos para endpoints sensibles, altos para endpoints públicos.</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-3 mb-3">
+                            <h6><strong>Window = TimeSpan.FromMinutes(5)</strong></h6>
+                            <ul class="mb-0">
+                                <li><strong>¿Qué Es?</strong> La duración total de la ventana de tiempo en la que se cuentan las peticiones.</li>
+                                <li><strong>¿Para qué se usa?</strong> Para definir el período de tiempo en el que aplica el límite de peticiones.</li>
+                                <li><strong>¿Cómo se usa?</strong> Se configura usando TimeSpan (FromMinutes, FromSeconds, FromHours).</li>
+                                <li><strong>¿Cuál es su beneficio?</strong> Permite controlar la frecuencia de peticiones en un período específico, evitando picos de tráfico.</li>
+                                <li><strong>¿Valores a configurar y por qué?</strong> Login: 5-15 minutos. APIs: 1-60 minutos. Ventanas más largas para endpoints menos críticos, más cortas para sensibles.</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-3 mb-3">
+                            <h6><strong>SegmentsPerWindow = 2</strong></h6>
+                            <ul class="mb-0">
+                                <li><strong>¿Qué Es?</strong> El número de segmentos en los que se divisiona la ventana de tiempo para cálculo más preciso.</li>
+                                <li><strong>¿Para qué se usa?</strong> Para implementar el algoritmo de ventana deslizante (sliding window) con mayor precisión.</li>
+                                <li><strong>¿Cómo se usa?</strong> Se configura como un valor entero que divide la ventana en segmentos iguales.</li>
+                                <li><strong>¿Cuál es su beneficio?</strong> Evita picos repentinos al final de la ventana y proporciona un rate limiting más suave y preciso.</li>
+                                <li><strong>¿Valores a configurar y por qué?</strong> 2-10 segmentos. Más segmentos = mayor precisión pero mayor consumo de memoria. 2-4 es un buen balance.</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-3 mb-3">
+                            <h6><strong>QueueProcessingOrder = OldestFirst</strong></h6>
+                            <ul class="mb-0">
+                                <li><strong>¿Qué Es?</strong> Define el orden en que se procesan las peticiones que están en cola esperando ser atendidas.</li>
+                                <li><strong>¿Para qué se usa?</strong> Para determinar la prioridad de procesamiento cuando hay peticiones en espera.</li>
+                                <li><strong>¿Cómo se usa?</strong> Se configura con <code>QueueProcessingOrder.OldestFirst</code> o <code>QueueProcessingOrder.NewestFirst</code>.</li>
+                                <li><strong>¿Cuál es su beneficio?</strong> <code>OldestFirst</code> garantiza fairness (las peticiones más antiguas se procesan primero). <code>NewestFirst</code> prioriza peticiones recientes.</li>
+                                <li><strong>¿Valores a configurar y por qué?</strong> <code>OldestFirst</code> para la mayoría de casos (fairness). <code>NewestFirst</code> para sistemas donde las peticiones recientes son más relevantes.</li>
+                            </ul>
+                        </div>
+
+                        <div class="mt-3 mb-3">
+                            <h6><strong>QueueLimit = 2</strong></h6>
+                            <ul class="mb-0">
+                                <li><strong>¿Qué Es?</strong> El número máximo de peticiones que pueden esperar en cola antes de ser rechazadas.</li>
+                                <li><strong>¿Para qué se usa?</strong> Para definir la capacidad de la cola de espera cuando se excede el límite de peticiones.</li>
+                                <li><strong>¿Cómo se usa?</strong> Se configura como un valor entero que representa el tamaño máximo de la cola.</li>
+                                <li><strong>¿Cuál es su beneficio?</strong> Permite manejar picos breves de tráfico sin rechazar peticiones inmediatamente, mejorando la experiencia del usuario.</li>
+                                <li><strong>¿Valores a configurar y por qué?</strong> 0-10 peticiones. 0 = sin cola (rechazo inmediato). Valores pequeños (2-5) para endpoints sensibles. Valores mayores para APIs públicas.</li>
+                            </ul>
+                        </div>
+
+                        <p class="mb-0 mt-3"><strong>Comportamiento práctico con esta configuración:</strong> Un usuario puede hacer hasta 5 intentos de login en 5 minutos. Si excede ese límite, las siguientes 2 peticiones se ponen en cola. Si hay más de 7 peticiones (5 permitidas + 2 en cola), las adicionales se rechazan inmediatamente con HTTP 429.</p>
+                    </div>
+
+                    <h4>3. Aplicar políticas en controladores o acciones</h4>
+                    <div class="code-block">
+                        <pre><code>using Microsoft.AspNetCore.RateLimiting;
+
+[EnableRateLimiting("LoginPolicy")]
+public class InicioController : Controller
+{
+    [HttpPost]
+    [EnableRateLimiting("LoginPolicy")]
+    public async Task&lt;IActionResult&gt; Login(string correo, string clave)
+    {
+        // Esta acción tiene rate limiting más estricto
+        // Solo 5 intentos por IP cada 5 minutos
+        var usuario = await _usuarioService.Validar(correo, UtilidadServicio.ConvertirSHA256(clave));
+        // ...
+    }
+
+    [HttpPost]
+    [EnableRateLimiting("GeneralPolicy")]
+    public async Task&lt;IActionResult&gt; Registrar(UsuarioDTO usuario)
+    {
+        // Esta acción usa la política general
+        // 100 peticiones por IP cada minuto
+        // ...
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>4. Habilitar Rate Limiting en el middleware</h4>
+                    <div class="code-block">
+                        <pre><code>// En Program.cs, después de app.UseRouting()
+app.UseRateLimiter();</code></pre>
+                    </div>
+
+                    <h4>5. Tipos de algoritmos de Rate Limiting</h4>
+                    <div class="code-block">
+                        <pre><code>// 1. Fixed Window - Ventana fija
+options.AddPolicy("FixedWindow", context =&gt;
+    RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+        factory: _ =&gt; new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 5
+        }));
+
+// 2. Sliding Window - Ventana deslizante (recomendado)
+options.AddPolicy("SlidingWindow", context =&gt;
+    RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+        factory: _ =&gt; new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 2,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 5
+        }));
+
+// 3. Token Bucket - Cubo de tokens
+options.AddPolicy("TokenBucket", context =&gt;
+    RateLimitPartition.GetTokenBucketLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+        factory: _ =&gt; new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 10,
+            QueueLimit = 5,
+            ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+            TokensPerPeriod = 1,
+            AutoReplenishment = true
+        }));</code></pre>
+                    </div>
+
+                    <h4>6. Rate Limiting por usuario autenticado</h4>
+                    <div class="code-block">
+                        <pre><code>// Política basada en el ID de usuario en lugar de IP
+options.AddPolicy("UserPolicy", context =&gt;
+{
+    var userId = context.User.FindFirst("sub")?.Value ?? 
+                 context.Connection.RemoteIpAddress?.ToString();
+    
+    return RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: userId,
+        factory: _ =&gt; new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 50,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 2,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 10
+        });
+});</code></pre>
+                    </div>
+
+                    <h4>7. Rate Limiting con almacenamiento distribuido (Redis)</h4>
+                    <div class="code-block">
+                        <pre><code>// Instalar paquete
+Install-Package Microsoft.AspNetCore.RateLimiting
+Install-Package Microsoft.Extensions.Caching.StackExchangeRedis
+
+// Configurar Redis
+builder.Services.AddStackExchangeRedisCache(options =&gt;
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "RateLimit_";
+});
+
+// Usar partition key que funcione con Redis
+options.AddPolicy("DistributedPolicy", context =&gt;
+    RateLimitPartition.GetSlidingWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString(),
+        factory: _ =&gt; new SlidingWindowRateLimiterOptions
+        {
+            PermitLimit = 100,
+            Window = TimeSpan.FromMinutes(1),
+            SegmentsPerWindow = 2,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 10
+        }));</code></pre>
+                    </div>
+
+                    <div class="tip-box">
+                        <strong><i class="bi bi-lightbulb"></i> Recomendaciones:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Usa <strong>Sliding Window</strong> para endpoints de login (evita picos al final de la ventana)</li>
+                            <li>Implementa límites más estrictos para endpoints sensibles (login, registro, recuperación de contraseña)</li>
+                            <li>Usa <strong>Redis</strong> para aplicaciones distribuidas o con múltiples servidores</li>
+                            <li>Personaliza el mensaje de error para informar al usuario cuándo puede volver a intentar</li>
+                            <li>Monitorea los logs de rate limiting para detectar posibles ataques</li>
+                        </ul>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong><i class="bi bi-exclamation-triangle"></i> Consideraciones importantes:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Rate Limiting por IP puede afectar usuarios detrás de NAT (múltiples usuarios con misma IP)</li>
+                            <li>Para aplicaciones con balanceadores de carga, usa almacenamiento distribuido (Redis)</li>
+                            <li>Considera implementar "whitelist" para IPs confiables</li>
+                            <li>Rate Limiting no reemplaza otras medidas de seguridad, las complementa</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Mejoras -->
+                <section id="mejoras" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-star"></i> Mejoras Adicionales Recomendadas</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">
+                                    <i class="bi bi-shield-lock"></i> Seguridad
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li><strong>Rate Limiting:</strong> Implementar límites de intentos de login</li>
+                                        <li><strong>CORS:</strong> Configurar correctamente si hay APIs externas</li>
+                                        <li><strong>HTTPS:</strong> Forzar HTTPS en producción</li>
+                                        <li><strong>CSRF:</strong> Usar antiforgery tokens en formularios</li>
+                                        <li><strong>Input Validation:</strong> Validación robusta en servidor y cliente</li>
+                                        <li><strong>SQL Injection:</strong> EF Core ya protege, pero validar queries raw</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="bi bi-speedometer2"></i> Performance
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li><strong>Caching:</strong> Implementar caching con IMemoryCache o Redis</li>
+                                        <li><strong>Response Caching:</strong> Cachear respuestas estáticas</li>
+                                        <li><strong>Async/Await:</strong> Usar operaciones asíncronas en todo</li>
+                                        <li><strong>Connection Pooling:</strong> EF Core maneja esto automáticamente</li>
+                                        <li><strong>Minificación:</strong> Bundling y minificación de assets</li>
+                                        <li><strong>CDN:</strong> Usar CDN para Bootstrap y HTMX</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <i class="bi bi-code"></i> Arquitectura
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li><strong>Repository Pattern:</strong> Considerar para abstracción de datos</li>
+                                        <li><strong>Unit of Work:</strong> Para transacciones complejas</li>
+                                        <li><strong>DTOs:</strong> Separar modelos de dominio de modelos de vista</li>
+                                        <li><strong>Mapping:</strong> Usar AutoMapper para mapeo de objetos</li>
+                                        <li><strong>Logging:</strong> Implementar logging estructurado</li>
+                                        <li><strong>Configuration:</strong> Usar Options pattern para configuración</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-secondary text-white">
+                                    <i class="bi bi-tools"></i> Desarrollo
+                                </div>
+                                <div class="card-body">
+                                    <ul>
+                                        <li><strong>Health Checks:</strong> Implementar health checks</li>
+                                            <li><strong>CI/CD:</strong> Automatizar despliegues</li>
+                                        <li><strong>Testing:</strong> Unit tests y integration tests</li>
+                                        <li><strong>API Documentation:</strong> Swagger/OpenAPI</li>
+                                        <li><strong>Environment Variables:</strong> Configurar por ambiente</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mt-4">Implementación de Health Checks</h4>
+                    <div class="code-block">
+                        <pre><code>// Instalar paquetes desde Package Manager Console
+Install-Package Microsoft.AspNetCore.Diagnostics.HealthChecks
+Install-Package AspNetCore.HealthChecks.UI
+
+// Program.cs
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck&lt;ApplicationDbContext&gt;()
+    .AddSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+app.MapHealthChecks("/health");
+
+// Para UI de health checks
+builder.Services.AddHealthChecksUI();
+app.MapHealthChecksUI();</code></pre>
+                    </div>
+
+                    <h4>Implementación de Logging</h4>
+                    <div class="code-block">
+                        <pre><code>// Program.cs
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// En controlador
+private readonly ILogger&lt;InicioController&gt; _logger;
+
+public InicioController(ILogger&lt;InicioController&gt; logger, ...)
+{
+    _logger = logger;
+}
+
+public async Task&lt;IActionResult&gt; Login(string correo, string clave)
+{
+    _logger.LogInformation("Intento de login para {Correo}", correo);
+    
+    try
+    {
+        // ... lógica
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error en login para {Correo}", correo);
+        throw;
+    }
+}</code></pre>
+                    </div>
+
+                    <h4>Implementación de AutoMapper</h4>
+                    <div class="code-block">
+                        <pre><code>// Instalar desde Package Manager Console
+Install-Package AutoMapper.Extensions.Microsoft.DependencyInjection
+
+// Perfil de mapeo
+public class MappingProfile : Profile
+{
+    public MappingProfile()
+    {
+        CreateMap&lt;Usuario, UsuarioDTO&gt;();
+        CreateMap&lt;UsuarioDTO, Usuario&gt;();
+    }
+}
+
+// Program.cs
+builder.Services.AddAutoMapper(typeof(Program));
+
+// En controlador
+private readonly IMapper _mapper;
+
+public InicioController(IMapper mapper, ...)
+{
+    _mapper = mapper;
+}
+
+var usuario = _mapper.Map&lt;Usuario&gt;(usuarioDTO);</code></pre>
+                    </div>
+                </section>
+
+                <!-- Recursos -->
+                <section id="recursos" class="mb-5">
+                    <h2 class="section-title"><i class="bi bi-link-45deg"></i> Recursos y Documentación</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Documentación Oficial</h4>
+                            <ul>
+                                <li><a href="https://learn.microsoft.com/en-us/aspnet/core/" target="_blank">ASP.NET Core Documentation</a></li>
+                                <li><a href="https://learn.microsoft.com/en-us/ef/core/" target="_blank">Entity Framework Core</a></li>
+                                <li><a href="https://jwt.io/introduction" target="_blank">JWT Introduction</a></li>
+                                <li><a href="https://htmx.org/docs/" target="_blank">HTMX Documentation</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Herramientas</h4>
+                            <ul>
+                                <li><a href="https://jwt.io/" target="_blank">JWT Debugger</a></li>
+                                <li><a href="https://www.getpostman.com/" target="_blank">Postman (para testing)</a></li>
+                                <li><a href="https://www.nuget.org/" target="_blank">NuGet Package Manager</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="highlight-box mt-4">
+                        <strong><i class="bi bi-check-circle"></i> Checklist de Migración:</strong>
+                        <div class="mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check1">
+                                <label class="form-check-label" for="check1">Crear proyecto ASP.NET Core 8/9 MVC</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check2">
+                                <label class="form-check-label" for="check2">Migrar modelos y crear DbContext</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check3">
+                                <label class="form-check-label" for="check3">Configurar Entity Framework Core</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check4">
+                                <label class="form-check-label" for="check4">Migrar controladores con DI</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check5">
+                                <label class="form-check-label" for="check5">Migrar vistas a Razor + Tag Helpers</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check6">
+                                <label class="form-check-label" for="check6">Implementar JWT authentication</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check7">
+                                <label class="form-check-label" for="check7">Integrar HTMX en vistas</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check8">
+                                <label class="form-check-label" for="check8">Implementar mejoras de seguridad</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check9">
+                                <label class="form-check-label" for="check9">Agregar logging y health checks</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="check10">
+                                <label class="form-check-label" for="check10">Testing y despliegue</label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <footer class="mt-5 pt-4 border-top">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="text-muted">Guía de Migración - WebAppCorreo</p>
+                            <p class="text-muted small">ASP.NET MVC 5 → ASP.NET Core 8/9 MVC</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <!--<p class="text-muted">Generado el @DateTime.Now.ToString("dd/MM/yyyy")</p>-->
+							<p class="text-muted" id="fecha-actual">Generado el @DateTime.Now.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Exportar a PDF
+        document.getElementById('exportPdf').addEventListener('click', async function() {
+            const { jsPDF } = window.jspdf;
+            const content = document.querySelector('.col-md-9.col-lg-10');
+            
+            if (!content) {
+                alert('No se encontró el contenido para exportar.');
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Generando...';
+            this.disabled = true;
+
+            try {
+                console.log('Iniciando generación de PDF...');
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = 210;
+                const pageHeight = 297;
+                const margin = 10;
+                const contentWidth = pageWidth - (2 * margin);
+                let currentPageHeight = 0;
+                
+                // Capturar el título principal primero
+                const header = content.querySelector('.mb-4');
+                if (header) {
+                    const headerCanvas = await html2canvas(header, {
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    });
+                    
+                    const headerImgData = headerCanvas.toDataURL('image/jpeg', 0.7);
+                    const headerHeight = (headerCanvas.height * contentWidth) / headerCanvas.width;
+                    
+                    pdf.addImage(headerImgData, 'JPEG', margin, margin, contentWidth, headerHeight);
+                    currentPageHeight = headerHeight + 15; // 15mm de espacio después del título
+                }
+                
+                // Capturar cada elemento individualmente para evitar cortes
+                const elements = content.querySelectorAll('section > *');
+                
+                for (let i = 0; i < elements.length; i++) {
+                    const element = elements[i];
+                    
+                    // Ocultar botones de copiar temporalmente
+                    const copyButtons = element.querySelectorAll('.copy-btn');
+                    copyButtons.forEach(btn => btn.style.display = 'none');
+                    
+                    // Capturar el elemento
+                    const canvas = await html2canvas(element, {
+                        scale: 1,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    });
+                    
+                    // Restaurar botones de copiar
+                    copyButtons.forEach(btn => btn.style.display = '');
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.7);
+                    const imgHeight = (canvas.height * contentWidth) / canvas.width;
+                    
+                    // Verificar si el elemento cabe en la página actual
+                    // Si es un bloque de código, asegurar que queba completo
+                    const isCodeBlock = element.classList.contains('code-block') || element.querySelector('.code-block');
+                    const minHeightNeeded = isCodeBlock ? imgHeight + 20 : imgHeight + 5;
+                    
+                    if (currentPageHeight + minHeightNeeded > pageHeight - margin) {
+                        pdf.addPage();
+                        currentPageHeight = 0;
+                    }
+                    
+                    pdf.addImage(imgData, 'JPEG', margin, currentPageHeight + margin, contentWidth, imgHeight);
+                    currentPageHeight += imgHeight + (isCodeBlock ? 10 : 5); // Más espacio después de bloques de código
+                }
+
+                pdf.save('Guia-ASPNETCore-Auth.pdf');
+                console.log('PDF generado exitosamente');
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Error al generar el PDF: ' + error.message + '\nPor favor, revisa la consola para más detalles.');
+            } finally {
+                this.innerHTML = '<i class="bi bi-file-earmark-pdf"></i> Exportar a PDF';
+                this.disabled = false;
+            }
+        });
+
+        // Agregar botones de copiar a todos los bloques de código
+        document.querySelectorAll('pre').forEach(pre => {
+            const code = pre.querySelector('code');
+            if (code) {
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = '<i class="bi bi-clipboard"></i> Copiar';
+                copyBtn.onclick = async function() {
+                    try {
+                        await navigator.clipboard.writeText(code.textContent);
+                        copyBtn.innerHTML = '<i class="bi bi-check"></i> Copiado';
+                        copyBtn.classList.add('copied');
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="bi bi-clipboard"></i> Copiar';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    } catch (err) {
+                        copyBtn.innerHTML = '<i class="bi bi-x"></i> Error';
+                    }
+                };
+                pre.appendChild(copyBtn);
+            }
+        });
+
+        // Smooth scrolling para navegación
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Guardar checklist en localStorage
+        document.querySelectorAll('.form-check-input').forEach(checkbox => {
+            // Cargar estado guardado
+            const savedState = localStorage.getItem(checkbox.id);
+            if (savedState === 'true') {
+                checkbox.checked = true;
+            }
+
+            // Guardar estado al cambiar
+            checkbox.addEventListener('change', function() {
+                localStorage.setItem(this.id, this.checked);
+            });
+        });
+		
+		// Espera a que cargue el DOM
+		document.addEventListener("DOMContentLoaded", () => {
+			const opciones = { 
+			  weekday: 'long', 
+			  year: 'numeric', 
+			  month: 'long', 
+			  day: 'numeric' 
+			};
+		// Obtiene la fecha local formateada
+		const fecha = new Date().toLocaleDateString('es-ES', opciones);
+		document.getElementById('fecha-actual').textContent = fecha;
+		});
+    </script>
+</body>
+</html>
